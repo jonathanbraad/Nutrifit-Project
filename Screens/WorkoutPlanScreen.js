@@ -1,20 +1,33 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, set, push, get, update } from 'firebase/database';
 import { app } from '../firebaseConfig';
 
 export default function WorkoutPlanScreen({ navigation }) {
-  const [exercise, setExercise] = useState('');
+  const [exercises, setExercises] = useState([]);
+  const [exerciseName, setExerciseName] = useState('');
   const [reps, setReps] = useState('');
   const [error, setError] = useState('');
 
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  const handleSavePlan = async () => {
-    if (!exercise || !reps) {
+  const handleAddExercise = () => {
+    if (!exerciseName || !reps) {
       setError('Please fill in all fields');
+      return;
+    }
+    const newExercise = { exercise: exerciseName, reps: parseInt(reps) };
+    setExercises([...exercises, newExercise]);
+    setExerciseName('');
+    setReps('');
+    setError('');
+  };
+
+  const handleSavePlan = async () => {
+    if (exercises.length === 0) {
+      setError('Please add at least one exercise');
       return;
     }
 
@@ -33,16 +46,15 @@ export default function WorkoutPlanScreen({ navigation }) {
       await set(planRef, {
         type: 'workout',
         order: planCount + 1,
-        exercise,
-        reps: parseInt(reps),
+        exercises: exercises,
         userID: user.uid,
       });
 
       const userSnapshot = await get(userRef);
       const userData = userSnapshot.val();
 
-      if (!userData.activePlan) {
-        await update(userRef, { activePlan: planID });
+      if (!userData.activeWorkoutPlan) {
+        await update(userRef, { activeWorkoutPlan: planID });
       }
 
       const userPlans = userData.planIDs ? userData.planIDs : [];
@@ -62,9 +74,9 @@ export default function WorkoutPlanScreen({ navigation }) {
       <Text style={styles.title}>Create Your Workout Plan</Text>
       <TextInput
         style={styles.input}
-        placeholder="Exercise"
-        value={exercise}
-        onChangeText={setExercise}
+        placeholder="Exercise Name"
+        value={exerciseName}
+        onChangeText={setExerciseName}
       />
       <TextInput
         style={styles.input}
@@ -73,8 +85,18 @@ export default function WorkoutPlanScreen({ navigation }) {
         onChangeText={setReps}
         keyboardType="numeric"
       />
-      <Button title="Save Plan" onPress={handleSavePlan} />
+      <Button title="Add Exercise" onPress={handleAddExercise} />
       {error ? <Text style={styles.error}>{error}</Text> : null}
+      <FlatList
+        data={exercises}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.exerciseItem}>
+            <Text>{item.exercise}: {item.reps} reps</Text>
+          </View>
+        )}
+      />
+      <Button title="Save Plan" onPress={handleSavePlan} />
     </View>
   );
 }
@@ -106,5 +128,12 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 10,
     textAlign: 'center',
+  },
+  exerciseItem: {
+    padding: 10,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 5,
+    marginBottom: 10,
+    width: '100%',
   },
 });

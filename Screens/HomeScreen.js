@@ -91,8 +91,9 @@ export default function HomeScreen({ navigation }) {
         {activeWorkoutPlan && (
           <View style={styles.progressSection}>
             <Text style={styles.planOrderText}>Active Workout Plan</Text>
-            <Text style={styles.progressText}>Exercise: {activeWorkoutPlan.exercise}</Text>
-            <Text style={styles.progressText}>Reps: {activeWorkoutPlan.reps}</Text>
+            {activeWorkoutPlan.exercises.map((exercise, index) => (
+              <Text key={index} style={styles.progressText}>{exercise.exercise}: {exercise.reps} reps</Text>
+            ))}
             <Text style={styles.progressText}>Workouts completed: {workoutProgress.workoutsCompleted}</Text>
             <Text style={styles.progressText}>Cardio done: {workoutProgress.cardioDone} minutes</Text>
             <Text style={styles.progressText}>Calories burned: {workoutProgress.caloriesBurned}</Text>

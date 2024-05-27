@@ -78,10 +78,9 @@ export default function ManagePlansScreen({ navigation }) {
           <Text style={styles.planText}>Fats: {item.fats}g</Text>
         </>
       ) : (
-        <>
-          <Text style={styles.planText}>Exercise: {item.exercise}</Text>
-          <Text style={styles.planText}>Reps: {item.reps}</Text>
-        </>
+        item.exercises && item.exercises.map((exercise, index) => (
+          <Text key={index} style={styles.planText}>{exercise.exercise}: {exercise.reps} reps</Text>
+        ))
       )}
       <View style={styles.planButtons}>
         <Button title="Set Active" onPress={() => handleSetActivePlan(item.id, item.type)} />

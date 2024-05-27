@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, Button, StyleSheet, FlatList } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, onValue, remove, update } from 'firebase/database';
 import { app } from '../firebaseConfig';
@@ -21,7 +21,9 @@ export default function ManagePlansScreen({ navigation }) {
 
       onValue(plansRef, (snapshot) => {
         const data = snapshot.val() || {};
-        setPlans(Object.keys(data).map(key => ({ id: key, ...data[key] })));
+        const plansList = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        plansList.sort((a, b) => a.order - b.order); // Sort by order
+        setPlans(plansList);
       });
     }
   }, [auth.currentUser]);
@@ -54,6 +56,7 @@ export default function ManagePlansScreen({ navigation }) {
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={styles.planItem}>
+            <Text style={styles.planText}>Plan {item.order}</Text>
             <Text style={styles.planText}>Calories: {item.calories}</Text>
             <Text style={styles.planText}>Protein: {item.protein}g</Text>
             <Text style={styles.planText}>Carbs: {item.carbs}g</Text>

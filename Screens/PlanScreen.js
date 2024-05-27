@@ -22,10 +22,18 @@ export default function PlanScreen({ navigation }) {
 
     try {
       const user = auth.currentUser;
-      const planRef = push(ref(db, 'plans/' + user.uid));
+      const userRef = ref(db, 'users/' + user.uid);
+      const plansRef = ref(db, 'plans/' + user.uid);
+
+      const snapshot = await get(plansRef);
+      const plansData = snapshot.val() || {};
+      const planCount = Object.keys(plansData).length;
+
+      const planRef = push(plansRef);
       const planID = planRef.key;
 
       await set(planRef, {
+        order: planCount + 1,
         calories: parseInt(calories),
         protein: parseInt(protein),
         carbs: parseInt(carbs),
@@ -33,9 +41,8 @@ export default function PlanScreen({ navigation }) {
         userID: user.uid,
       });
 
-      const userRef = ref(db, 'users/' + user.uid);
-      const snapshot = await get(userRef);
-      const userData = snapshot.val();
+      const userSnapshot = await get(userRef);
+      const userData = userSnapshot.val();
 
       if (!userData.activePlan) {
         await update(userRef, { activePlan: planID });
@@ -48,6 +55,7 @@ export default function PlanScreen({ navigation }) {
 
       navigation.navigate('Home');
     } catch (error) {
+      console.error('Error creating plan:', error);
       setError(error.message);
     }
   };

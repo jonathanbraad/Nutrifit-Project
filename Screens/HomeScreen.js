@@ -80,14 +80,7 @@ export default function HomeScreen({ navigation }) {
         </View>
         <Text style={styles.progressGoalText}>Cardio goal: 60/120 minutes completed</Text>
       </View>
-      <View style={styles.navbar}>
-        <View style={styles.navItem}>
-          <Text>Home</Text>
-        </View>
-        <View style={styles.navItem}>
-          <Text>Planning</Text>
-        </View>
-      </View>
+
     </View>
   );
 }

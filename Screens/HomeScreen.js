@@ -33,6 +33,8 @@ export default function HomeScreen({ navigation }) {
       const userRef = ref(db, 'users/' + auth.currentUser.uid);
       const activeDietPlanRef = ref(db, 'users/' + auth.currentUser.uid + '/activeDietPlan');
       const activeWorkoutPlanRef = ref(db, 'users/' + auth.currentUser.uid + '/activeWorkoutPlan');
+      const dietProgressRef = ref(db, 'users/' + auth.currentUser.uid + '/dietProgress');
+      const workoutProgressRef = ref(db, 'users/' + auth.currentUser.uid + '/workoutProgress');
 
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
@@ -66,6 +68,29 @@ export default function HomeScreen({ navigation }) {
           });
         }
       });
+
+      onValue(dietProgressRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setDietProgress({
+            caloriesEaten: data.caloriesEaten || 0,
+            protein: data.protein || 0,
+            carbs: data.carbs || 0,
+            fats: data.fats || 0,
+          });
+        }
+      });
+
+      onValue(workoutProgressRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setWorkoutProgress({
+            workoutsCompleted: data.workoutsCompleted || 0,
+            cardioDone: data.cardioDone || 0,
+            caloriesBurned: data.caloriesBurned || 0,
+          });
+        }
+      });
     }
   }, [auth.currentUser]);
 
@@ -86,6 +111,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.progressText}>Protein: {dietProgress.protein}g / {activeDietPlan.protein}g</Text>
             <Text style={styles.progressText}>Carbs: {dietProgress.carbs}g / {activeDietPlan.carbs}g</Text>
             <Text style={styles.progressText}>Fats: {dietProgress.fats}g / {activeDietPlan.fats}g</Text>
+            <Button title="Update Diet Progress" onPress={() => navigation.navigate('EditDietPlan')} />
           </View>
         )}
         {activeWorkoutPlan && (
@@ -97,6 +123,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.progressText}>Workouts completed: {workoutProgress.workoutsCompleted}</Text>
             <Text style={styles.progressText}>Cardio done: {workoutProgress.cardioDone} minutes</Text>
             <Text style={styles.progressText}>Calories burned: {workoutProgress.caloriesBurned}</Text>
+            <Button title="Update Workout Progress" onPress={() => navigation.navigate('EditWorkoutPlan')} />
           </View>
         )}
       </View>

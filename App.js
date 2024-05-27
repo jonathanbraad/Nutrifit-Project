@@ -11,6 +11,8 @@ import DietPlanScreen from './Screens/DietPlanScreen'; // Renamed from PlanScree
 import WorkoutPlanScreen from './Screens/WorkoutPlanScreen'; // New screen
 import ManagePlansScreen from './Screens/ManagePlansScreen';
 import PlanSelectionScreen from './Screens/PlanSelectionScreen';
+import EditDietPlanScreen from './Screens/EditDietPlanScreen';
+import EditWorkoutPlanScreen from './Screens/EditWorkoutPlanScreen';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +27,8 @@ export default function App() {
         <Stack.Screen name="DietPlan" component={DietPlanScreen} />
         <Stack.Screen name="WorkoutPlan" component={WorkoutPlanScreen} />
         <Stack.Screen name="PlanSelection" component={PlanSelectionScreen} />
+        <Stack.Screen name="EditDietPlan" component={EditDietPlanScreen} />
+        <Stack.Screen name="EditWorkoutPlan" component={EditWorkoutPlanScreen} />
 
       </Stack.Navigator>
     </NavigationContainer>

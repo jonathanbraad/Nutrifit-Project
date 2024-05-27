@@ -1,8 +1,7 @@
-// src/screens/EditWorkoutPlanScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, FlatList } from 'react-native';
 import { getAuth } from 'firebase/auth';
-import { getDatabase, ref, update, onValue } from 'firebase/database';
+import { getDatabase, ref, update, onValue, get } from 'firebase/database';
 import { app } from '../firebaseConfig';
 
 export default function EditWorkoutPlanScreen({ navigation }) {
@@ -47,30 +46,23 @@ export default function EditWorkoutPlanScreen({ navigation }) {
   }, [auth.currentUser]);
 
   const handleUpdateWorkoutProgress = async () => {
-    if (!workoutsCompleted && !cardioDone && !caloriesBurned) {
-      setError('Please fill in at least one field');
-      return;
-    }
-
     try {
       const user = auth.currentUser;
       const workoutProgressRef = ref(db, 'users/' + user.uid + '/workoutProgress');
       await update(workoutProgressRef, {
-        workoutsCompleted: workoutsCompleted ? parseInt(workoutsCompleted) : undefined,
-        cardioDone: cardioDone ? parseInt(cardioDone) : undefined,
-        caloriesBurned: caloriesBurned ? parseInt(caloriesBurned) : undefined,
+        workoutsCompleted: workoutsCompleted ? parseInt(workoutsCompleted) : 0,
+        cardioDone: cardioDone ? parseInt(cardioDone) : 0,
+        caloriesBurned: caloriesBurned ? parseInt(caloriesBurned) : 0,
       });
 
       const activeWorkoutPlanRef = ref(db, 'users/' + user.uid + '/activeWorkoutPlan');
-      onValue(activeWorkoutPlanRef, async (snapshot) => {
-        const activeWorkoutPlanID = snapshot.val();
-        if (activeWorkoutPlanID) {
-          const planRef = ref(db, 'plans/' + user.uid + '/' + activeWorkoutPlanID);
-          await update(planRef, {
-            exercises: exercises,
-          });
-        }
-      });
+      const activeWorkoutPlanID = await get(activeWorkoutPlanRef).then(snapshot => snapshot.val());
+      if (activeWorkoutPlanID) {
+        const planRef = ref(db, 'plans/' + user.uid + '/' + activeWorkoutPlanID);
+        await update(planRef, {
+          exercises: exercises,
+        });
+      }
 
       navigation.navigate('Home');
     } catch (error) {

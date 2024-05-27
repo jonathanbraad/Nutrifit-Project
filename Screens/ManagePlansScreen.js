@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, FlatList } from 'react-native';
 import { getAuth } from 'firebase/auth';
-import { getDatabase, ref, onValue, remove, update } from 'firebase/database';
+import { getDatabase, ref, onValue, remove, update, get } from 'firebase/database';
 import { app } from '../firebaseConfig';
 
 export default function ManagePlansScreen({ navigation }) {
@@ -9,6 +9,8 @@ export default function ManagePlansScreen({ navigation }) {
   const [workoutPlans, setWorkoutPlans] = useState([]);
   const [activeDietPlan, setActiveDietPlan] = useState(null);
   const [activeWorkoutPlan, setActiveWorkoutPlan] = useState(null);
+  const [activeDietPlanID, setActiveDietPlanID] = useState(null);
+  const [activeWorkoutPlanID, setActiveWorkoutPlanID] = useState(null);
   const auth = getAuth(app);
   const db = getDatabase(app);
 
@@ -19,8 +21,8 @@ export default function ManagePlansScreen({ navigation }) {
 
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
-        setActiveDietPlan(data.activeDietPlan);
-        setActiveWorkoutPlan(data.activeWorkoutPlan);
+        setActiveDietPlanID(data.activeDietPlan);
+        setActiveWorkoutPlanID(data.activeWorkoutPlan);
       });
 
       onValue(plansRef, (snapshot) => {
@@ -49,11 +51,13 @@ export default function ManagePlansScreen({ navigation }) {
   const handleDeletePlan = async (planID, type) => {
     try {
       await remove(ref(db, 'plans/' + auth.currentUser.uid + '/' + planID));
-      if (type === 'diet' && planID === activeDietPlan) {
+      if (type === 'diet' && planID === activeDietPlanID) {
         setActiveDietPlan(null);
+        setActiveDietPlanID(null);
         await update(ref(db, 'users/' + auth.currentUser.uid), { activeDietPlan: null });
-      } else if (type === 'workout' && planID === activeWorkoutPlan) {
+      } else if (type === 'workout' && planID === activeWorkoutPlanID) {
         setActiveWorkoutPlan(null);
+        setActiveWorkoutPlanID(null);
         await update(ref(db, 'users/' + auth.currentUser.uid), { activeWorkoutPlan: null });
       }
     } catch (error) {
@@ -64,11 +68,23 @@ export default function ManagePlansScreen({ navigation }) {
   const handleSetActivePlan = async (planID, type) => {
     try {
       if (type === 'diet') {
-        setActiveDietPlan(planID);
         await update(ref(db, 'users/' + auth.currentUser.uid), { activeDietPlan: planID });
+        const planRef = ref(db, 'plans/' + auth.currentUser.uid + '/' + planID);
+        const planSnapshot = await get(planRef);
+        if (planSnapshot.exists()) {
+          const planData = planSnapshot.val();
+          setActiveDietPlan(planData);
+          setActiveDietPlanID(planID);
+        }
       } else if (type === 'workout') {
-        setActiveWorkoutPlan(planID);
         await update(ref(db, 'users/' + auth.currentUser.uid), { activeWorkoutPlan: planID });
+        const planRef = ref(db, 'plans/' + auth.currentUser.uid + '/' + planID);
+        const planSnapshot = await get(planRef);
+        if (planSnapshot.exists()) {
+          const planData = planSnapshot.val();
+          setActiveWorkoutPlan(planData);
+          setActiveWorkoutPlanID(planID);
+        }
       }
     } catch (error) {
       console.error('Error setting active plan:', error);
@@ -76,7 +92,7 @@ export default function ManagePlansScreen({ navigation }) {
   };
 
   const renderPlanItem = ({ item }) => (
-    <View style={[styles.planItem, (item.id === activeDietPlan || item.id === activeWorkoutPlan) && styles.activePlan]}>
+    <View style={[styles.planItem, (item.id === activeDietPlanID || item.id === activeWorkoutPlanID) && styles.activePlan]}>
       <Text style={styles.planText}>Plan {item.order}</Text>
       {item.type === 'diet' ? (
         <>

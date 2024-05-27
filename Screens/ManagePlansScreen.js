@@ -47,23 +47,31 @@ export default function ManagePlansScreen({ navigation }) {
   }, [auth.currentUser]);
 
   const handleDeletePlan = async (planID, type) => {
-    await remove(ref(db, 'plans/' + auth.currentUser.uid + '/' + planID));
-    if (type === 'diet' && planID === activeDietPlan) {
-      setActiveDietPlan(null);
-      await update(ref(db, 'users/' + auth.currentUser.uid), { activeDietPlan: null });
-    } else if (type === 'workout' && planID === activeWorkoutPlan) {
-      setActiveWorkoutPlan(null);
-      await update(ref(db, 'users/' + auth.currentUser.uid), { activeWorkoutPlan: null });
+    try {
+      await remove(ref(db, 'plans/' + auth.currentUser.uid + '/' + planID));
+      if (type === 'diet' && planID === activeDietPlan) {
+        setActiveDietPlan(null);
+        await update(ref(db, 'users/' + auth.currentUser.uid), { activeDietPlan: null });
+      } else if (type === 'workout' && planID === activeWorkoutPlan) {
+        setActiveWorkoutPlan(null);
+        await update(ref(db, 'users/' + auth.currentUser.uid), { activeWorkoutPlan: null });
+      }
+    } catch (error) {
+      console.error('Error deleting plan:', error);
     }
   };
 
   const handleSetActivePlan = async (planID, type) => {
-    if (type === 'diet') {
-      setActiveDietPlan(planID);
-      await update(ref(db, 'users/' + auth.currentUser.uid), { activeDietPlan: planID });
-    } else if (type === 'workout') {
-      setActiveWorkoutPlan(planID);
-      await update(ref(db, 'users/' + auth.currentUser.uid), { activeWorkoutPlan: planID });
+    try {
+      if (type === 'diet') {
+        setActiveDietPlan(planID);
+        await update(ref(db, 'users/' + auth.currentUser.uid), { activeDietPlan: planID });
+      } else if (type === 'workout') {
+        setActiveWorkoutPlan(planID);
+        await update(ref(db, 'users/' + auth.currentUser.uid), { activeWorkoutPlan: planID });
+      }
+    } catch (error) {
+      console.error('Error setting active plan:', error);
     }
   };
 
@@ -79,7 +87,10 @@ export default function ManagePlansScreen({ navigation }) {
         </>
       ) : (
         item.exercises && item.exercises.map((exercise, index) => (
-          <Text key={index} style={styles.planText}>{exercise.exercise}: {exercise.reps} reps</Text>
+          <View key={index} style={styles.exerciseItem}>
+            <Text style={styles.planText}>{exercise.exercise}: {exercise.reps} reps</Text>
+            <Text style={styles.planText}>Progress: {exercise.progress || 0} reps</Text>
+          </View>
         ))
       )}
       <View style={styles.planButtons}>
@@ -154,6 +165,9 @@ const styles = StyleSheet.create({
   planText: {
     fontSize: 16,
     marginBottom: 5,
+  },
+  exerciseItem: {
+    marginBottom: 10,
   },
   planButtons: {
     flexDirection: 'row',

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "893966245620",
+    "project_id": "nutrifit-final",
+    "storage_bucket": "nutrifit-final.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893966245620:android:c4fe04b2b743728b5c88a1",
+        "android_client_info": {
+          "package_name": "com.cphbusiness.nutrifit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTZOV3E-EtGwbyYsQLcZKNiJYwz9FY0gg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

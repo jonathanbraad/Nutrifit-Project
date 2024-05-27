@@ -118,7 +118,7 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.progressSection}>
             <Text style={styles.planOrderText}>Active Workout Plan</Text>
             {activeWorkoutPlan.exercises.map((exercise, index) => (
-              <Text key={index} style={styles.progressText}>{exercise.exercise}: {exercise.reps} reps</Text>
+              <Text key={index} style={styles.progressText}>{exercise.exercise}: {workoutProgress[exercise.exercise] || 0} / {exercise.reps} reps</Text>
             ))}
             <Text style={styles.progressText}>Workouts completed: {workoutProgress.workoutsCompleted}</Text>
             <Text style={styles.progressText}>Cardio done: {workoutProgress.cardioDone} minutes</Text>

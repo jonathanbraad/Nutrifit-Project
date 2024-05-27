@@ -8,7 +8,7 @@ export default function HomeScreen({ navigation }) {
   const auth = getAuth(app);
   const db = getDatabase(app);
   const [userName, setUserName] = useState('');
-  const [userPlan, setUserPlan] = useState(null);
+  const [activePlan, setActivePlan] = useState(null);
 
   const handleLogout = () => {
     signOut(auth).then(() => {
@@ -19,19 +19,25 @@ export default function HomeScreen({ navigation }) {
   useEffect(() => {
     if (auth.currentUser) {
       const userRef = ref(db, 'users/' + auth.currentUser.uid);
-      const planRef = ref(db, 'plans/' + auth.currentUser.uid);
-      
+      const activePlanRef = ref(db, 'users/' + auth.currentUser.uid + '/activePlan');
+
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           setUserName(data.username);
         }
       });
-      
-      onValue(planRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          setUserPlan(data);
+
+      onValue(activePlanRef, (snapshot) => {
+        const activePlanID = snapshot.val();
+        if (activePlanID) {
+          const planRef = ref(db, 'plans/' + auth.currentUser.uid + '/' + activePlanID);
+          onValue(planRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              setActivePlan(data);
+            }
+          });
         }
       });
     }
@@ -44,15 +50,16 @@ export default function HomeScreen({ navigation }) {
         <Button title="Log Out" onPress={handleLogout} />
       </View>
       <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
-      {userPlan && (
+      {activePlan && (
         <View style={styles.planContainer}>
-          <Text style={styles.planText}>Calories: {userPlan.calories}</Text>
-          <Text style={styles.planText}>Protein: {userPlan.protein}g</Text>
-          <Text style={styles.planText}>Carbs: {userPlan.carbs}g</Text>
-          <Text style={styles.planText}>Fats: {userPlan.fats}g</Text>
+          <Text style={styles.planText}>Calories: {activePlan.calories}</Text>
+          <Text style={styles.planText}>Protein: {activePlan.protein}g</Text>
+          <Text style={styles.planText}>Carbs: {activePlan.carbs}g</Text>
+          <Text style={styles.planText}>Fats: {activePlan.fats}g</Text>
         </View>
       )}
       <Button title="Create/Edit Plan" onPress={() => navigation.navigate('Plan')} />
+      <Button title="Manage Plans" onPress={() => navigation.navigate('ManagePlans')} />
       <View style={styles.progressContainer}>
         <View style={styles.progressSection}>
           <Text style={styles.progressText}>Calories eaten: ###</Text>

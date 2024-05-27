@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 import { getAuth } from 'firebase/auth';
-import { getDatabase, ref, set } from 'firebase/database';
+import { getDatabase, ref, set, push, get, update } from 'firebase/database';
 import { app } from '../firebaseConfig';
 
 export default function PlanScreen({ navigation }) {
@@ -22,12 +22,30 @@ export default function PlanScreen({ navigation }) {
 
     try {
       const user = auth.currentUser;
-      await set(ref(db, 'plans/' + user.uid), {
+      const planRef = push(ref(db, 'plans/' + user.uid));
+      const planID = planRef.key;
+
+      await set(planRef, {
         calories: parseInt(calories),
         protein: parseInt(protein),
         carbs: parseInt(carbs),
         fats: parseInt(fats),
+        userID: user.uid,
       });
+
+      const userRef = ref(db, 'users/' + user.uid);
+      const snapshot = await get(userRef);
+      const userData = snapshot.val();
+
+      if (!userData.activePlan) {
+        await update(userRef, { activePlan: planID });
+      }
+
+      const userPlans = userData.planIDs ? userData.planIDs : [];
+      userPlans.push(planID);
+
+      await update(userRef, { planIDs: userPlans });
+
       navigation.navigate('Home');
     } catch (error) {
       setError(error.message);

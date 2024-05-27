@@ -58,7 +58,7 @@ export default function HomeScreen({ navigation }) {
         <Button title="Log Out" onPress={handleLogout} />
       </View>
       <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
-      <Button title="Create Plan" onPress={() => navigation.navigate('Plan')} />
+      <Button title="Create Plan" onPress={() => navigation.navigate('PlanSelection')} />
       <Button title="Manage Plans" onPress={() => navigation.navigate('ManagePlans')} />
       {activePlan && (
         <View style={styles.progressContainer}>

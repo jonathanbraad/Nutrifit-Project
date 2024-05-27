@@ -7,8 +7,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import SignupScreen from './Screens/SignupScreen';
 import HomeScreen from './Screens/HomeScreen';
 import LoginScreen from './Screens/LoginScreen'; // Import LoginScreen
-import PlanScreen from './Screens/PlanScreen'; // Import PlanScreen
+import DietPlanScreen from './Screens/DietPlanScreen'; // Renamed from PlanScreen
+import WorkoutPlanScreen from './Screens/WorkoutPlanScreen'; // New screen
 import ManagePlansScreen from './Screens/ManagePlansScreen';
+import PlanSelectionScreen from './Screens/PlanSelectionScreen';
 
 const Stack = createStackNavigator();
 
@@ -19,8 +21,11 @@ export default function App() {
       <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Plan" component={PlanScreen} />
         <Stack.Screen name="ManagePlans" component={ManagePlansScreen} />
+        <Stack.Screen name="DietPlan" component={DietPlanScreen} />
+        <Stack.Screen name="WorkoutPlan" component={WorkoutPlanScreen} />
+        <Stack.Screen name="PlanSelection" component={PlanSelectionScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

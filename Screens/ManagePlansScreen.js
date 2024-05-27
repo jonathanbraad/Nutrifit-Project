@@ -5,69 +5,112 @@ import { getDatabase, ref, onValue, remove, update } from 'firebase/database';
 import { app } from '../firebaseConfig';
 
 export default function ManagePlansScreen({ navigation }) {
-  const [plans, setPlans] = useState([]);
-  const [activePlan, setActivePlan] = useState(null);
+  const [dietPlans, setDietPlans] = useState([]);
+  const [workoutPlans, setWorkoutPlans] = useState([]);
+  const [activeDietPlan, setActiveDietPlan] = useState(null);
+  const [activeWorkoutPlan, setActiveWorkoutPlan] = useState(null);
   const auth = getAuth(app);
   const db = getDatabase(app);
 
   useEffect(() => {
     if (auth.currentUser) {
-      const userRef = ref(db, 'users/' + auth.currentUser.uid + '/activePlan');
+      const userRef = ref(db, 'users/' + auth.currentUser.uid);
       const plansRef = ref(db, 'plans/' + auth.currentUser.uid);
 
       onValue(userRef, (snapshot) => {
-        setActivePlan(snapshot.val());
+        const data = snapshot.val();
+        setActiveDietPlan(data.activeDietPlan);
+        setActiveWorkoutPlan(data.activeWorkoutPlan);
       });
 
       onValue(plansRef, (snapshot) => {
         const data = snapshot.val() || {};
-        const plansList = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-        plansList.sort((a, b) => a.order - b.order); // Sort by order
-        setPlans(plansList);
+        const dietPlansList = [];
+        const workoutPlansList = [];
+
+        Object.keys(data).forEach(key => {
+          const plan = { id: key, ...data[key] };
+          if (plan.type === 'diet') {
+            dietPlansList.push(plan);
+          } else if (plan.type === 'workout') {
+            workoutPlansList.push(plan);
+          }
+        });
+
+        dietPlansList.sort((a, b) => a.order - b.order);
+        workoutPlansList.sort((a, b) => a.order - b.order);
+
+        setDietPlans(dietPlansList);
+        setWorkoutPlans(workoutPlansList);
       });
     }
   }, [auth.currentUser]);
 
-  const handleDeletePlan = async (planID) => {
+  const handleDeletePlan = async (planID, type) => {
     await remove(ref(db, 'plans/' + auth.currentUser.uid + '/' + planID));
-    if (planID === activePlan) {
-      setActivePlan(null);
-      await update(ref(db, 'users/' + auth.currentUser.uid), { activePlan: null });
+    if (type === 'diet' && planID === activeDietPlan) {
+      setActiveDietPlan(null);
+      await update(ref(db, 'users/' + auth.currentUser.uid), { activeDietPlan: null });
+    } else if (type === 'workout' && planID === activeWorkoutPlan) {
+      setActiveWorkoutPlan(null);
+      await update(ref(db, 'users/' + auth.currentUser.uid), { activeWorkoutPlan: null });
     }
-
-    const userRef = ref(db, 'users/' + auth.currentUser.uid);
-    const snapshot = await onValue(userRef, (snapshot) => {
-      const data = snapshot.val();
-      const updatedPlanIDs = data.planIDs.filter(id => id !== planID);
-      update(userRef, { planIDs: updatedPlanIDs });
-    });
   };
 
-  const handleSetActivePlan = async (planID) => {
-    setActivePlan(planID);
-    await update(ref(db, 'users/' + auth.currentUser.uid), { activePlan: planID });
+  const handleSetActivePlan = async (planID, type) => {
+    if (type === 'diet') {
+      setActiveDietPlan(planID);
+      await update(ref(db, 'users/' + auth.currentUser.uid), { activeDietPlan: planID });
+    } else if (type === 'workout') {
+      setActiveWorkoutPlan(planID);
+      await update(ref(db, 'users/' + auth.currentUser.uid), { activeWorkoutPlan: planID });
+    }
   };
+
+  const renderPlanItem = ({ item }) => (
+    <View style={[styles.planItem, (item.id === activeDietPlan || item.id === activeWorkoutPlan) && styles.activePlan]}>
+      <Text style={styles.planText}>Plan {item.order}</Text>
+      {item.type === 'diet' ? (
+        <>
+          <Text style={styles.planText}>Calories: {item.calories}</Text>
+          <Text style={styles.planText}>Protein: {item.protein}g</Text>
+          <Text style={styles.planText}>Carbs: {item.carbs}g</Text>
+          <Text style={styles.planText}>Fats: {item.fats}g</Text>
+        </>
+      ) : (
+        <>
+          <Text style={styles.planText}>Exercise: {item.exercise}</Text>
+          <Text style={styles.planText}>Reps: {item.reps}</Text>
+        </>
+      )}
+      <View style={styles.planButtons}>
+        <Button title="Set Active" onPress={() => handleSetActivePlan(item.id, item.type)} />
+        <Button title="Delete" onPress={() => handleDeletePlan(item.id, item.type)} />
+      </View>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Manage Your Plans</Text>
-      <FlatList
-        data={plans}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <View style={[styles.planItem, item.id === activePlan && styles.activePlan]}>
-            <Text style={styles.planText}>Plan {item.order}</Text>
-            <Text style={styles.planText}>Calories: {item.calories}</Text>
-            <Text style={styles.planText}>Protein: {item.protein}g</Text>
-            <Text style={styles.planText}>Carbs: {item.carbs}g</Text>
-            <Text style={styles.planText}>Fats: {item.fats}g</Text>
-            <View style={styles.planButtons}>
-              <Button title="Set Active" onPress={() => handleSetActivePlan(item.id)} />
-              <Button title="Delete" onPress={() => handleDeletePlan(item.id)} />
-            </View>
-          </View>
-        )}
-      />
+      <View style={styles.plansContainer}>
+        <View style={styles.planList}>
+          <Text style={styles.listTitle}>Diet Plans</Text>
+          <FlatList
+            data={dietPlans}
+            keyExtractor={item => item.id}
+            renderItem={renderPlanItem}
+          />
+        </View>
+        <View style={styles.planList}>
+          <Text style={styles.listTitle}>Workout Plans</Text>
+          <FlatList
+            data={workoutPlans}
+            keyExtractor={item => item.id}
+            renderItem={renderPlanItem}
+          />
+        </View>
+      </View>
       <Button title="Back to Home" onPress={() => navigation.navigate('Home')} />
     </View>
   );
@@ -86,12 +129,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
+  plansContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  planList: {
+    width: '48%',
+  },
+  listTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
   planItem: {
     backgroundColor: '#e0e0e0',
     padding: 15,
     borderRadius: 10,
     marginBottom: 15,
-    width: '100%',
   },
   activePlan: {
     backgroundColor: '#a0d3ff', // Change color to highlight the active plan

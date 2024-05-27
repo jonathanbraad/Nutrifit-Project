@@ -8,14 +8,19 @@ export default function HomeScreen({ navigation }) {
   const auth = getAuth(app);
   const db = getDatabase(app);
   const [userName, setUserName] = useState('');
-  const [activePlan, setActivePlan] = useState(null);
-  const [progress, setProgress] = useState({
+  const [activeDietPlan, setActiveDietPlan] = useState(null);
+  const [activeWorkoutPlan, setActiveWorkoutPlan] = useState(null);
+  const [dietProgress, setDietProgress] = useState({
     caloriesEaten: 0,
     protein: 0,
     carbs: 0,
     fats: 0,
   });
-  const [planOrder, setPlanOrder] = useState(null);
+  const [workoutProgress, setWorkoutProgress] = useState({
+    workoutsCompleted: 0,
+    cardioDone: 0,
+    caloriesBurned: 0,
+  });
 
   const handleLogout = () => {
     signOut(auth).then(() => {
@@ -26,7 +31,8 @@ export default function HomeScreen({ navigation }) {
   useEffect(() => {
     if (auth.currentUser) {
       const userRef = ref(db, 'users/' + auth.currentUser.uid);
-      const activePlanRef = ref(db, 'users/' + auth.currentUser.uid + '/activePlan');
+      const activeDietPlanRef = ref(db, 'users/' + auth.currentUser.uid + '/activeDietPlan');
+      const activeWorkoutPlanRef = ref(db, 'users/' + auth.currentUser.uid + '/activeWorkoutPlan');
 
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
@@ -35,15 +41,27 @@ export default function HomeScreen({ navigation }) {
         }
       });
 
-      onValue(activePlanRef, (snapshot) => {
-        const activePlanID = snapshot.val();
-        if (activePlanID) {
-          const planRef = ref(db, 'plans/' + auth.currentUser.uid + '/' + activePlanID);
+      onValue(activeDietPlanRef, (snapshot) => {
+        const activeDietPlanID = snapshot.val();
+        if (activeDietPlanID) {
+          const planRef = ref(db, 'plans/' + auth.currentUser.uid + '/' + activeDietPlanID);
           onValue(planRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
-              setActivePlan(data);
-              setPlanOrder(data.order);
+              setActiveDietPlan(data);
+            }
+          });
+        }
+      });
+
+      onValue(activeWorkoutPlanRef, (snapshot) => {
+        const activeWorkoutPlanID = snapshot.val();
+        if (activeWorkoutPlanID) {
+          const planRef = ref(db, 'plans/' + auth.currentUser.uid + '/' + activeWorkoutPlanID);
+          onValue(planRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              setActiveWorkoutPlan(data);
             }
           });
         }
@@ -60,22 +78,27 @@ export default function HomeScreen({ navigation }) {
       <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
       <Button title="Create Plan" onPress={() => navigation.navigate('PlanSelection')} />
       <Button title="Manage Plans" onPress={() => navigation.navigate('ManagePlans')} />
-      {activePlan && (
-        <View style={styles.progressContainer}>
+      <View style={styles.plansContainer}>
+        {activeDietPlan && (
           <View style={styles.progressSection}>
-            <Text style={styles.planOrderText}>Plan {planOrder}</Text>
-            <Text style={styles.progressText}>Calories: {progress.caloriesEaten} / {activePlan.calories}</Text>
-            <Text style={styles.progressText}>Protein: {progress.protein}g / {activePlan.protein}g</Text>
-            <Text style={styles.progressText}>Carbs: {progress.carbs}g / {activePlan.carbs}g</Text>
-            <Text style={styles.progressText}>Fats: {progress.fats}g / {activePlan.fats}g</Text>
+            <Text style={styles.planOrderText}>Active Diet Plan</Text>
+            <Text style={styles.progressText}>Calories: {dietProgress.caloriesEaten} / {activeDietPlan.calories}</Text>
+            <Text style={styles.progressText}>Protein: {dietProgress.protein}g / {activeDietPlan.protein}g</Text>
+            <Text style={styles.progressText}>Carbs: {dietProgress.carbs}g / {activeDietPlan.carbs}g</Text>
+            <Text style={styles.progressText}>Fats: {dietProgress.fats}g / {activeDietPlan.fats}g</Text>
           </View>
+        )}
+        {activeWorkoutPlan && (
           <View style={styles.progressSection}>
-            <Text style={styles.progressText}>Workouts completed: ###</Text>
-            <Text style={styles.progressText}>Cardio done: ###</Text>
-            <Text style={styles.progressText}>Calories burned: ###</Text>
+            <Text style={styles.planOrderText}>Active Workout Plan</Text>
+            <Text style={styles.progressText}>Exercise: {activeWorkoutPlan.exercise}</Text>
+            <Text style={styles.progressText}>Reps: {activeWorkoutPlan.reps}</Text>
+            <Text style={styles.progressText}>Workouts completed: {workoutProgress.workoutsCompleted}</Text>
+            <Text style={styles.progressText}>Cardio done: {workoutProgress.cardioDone} minutes</Text>
+            <Text style={styles.progressText}>Calories burned: {workoutProgress.caloriesBurned}</Text>
           </View>
-        </View>
-      )}
+        )}
+      </View>
       <View style={styles.progressBarContainer}>
         <Text style={styles.progressBarText}>Progress bars/Goals:</Text>
         <View style={styles.progressBar}>
@@ -108,7 +131,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  progressContainer: {
+  plansContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -117,6 +140,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0f7fa',
     padding: 10,
     borderRadius: 10,
+    marginBottom: 20,
   },
   planOrderText: {
     fontSize: 18,

@@ -33,6 +33,7 @@ export default function PlanScreen({ navigation }) {
       const planID = planRef.key;
 
       await set(planRef, {
+        type: 'diet', // Ensure the plan is identified as a diet plan
         order: planCount + 1,
         calories: parseInt(calories),
         protein: parseInt(protein),
@@ -44,8 +45,8 @@ export default function PlanScreen({ navigation }) {
       const userSnapshot = await get(userRef);
       const userData = userSnapshot.val();
 
-      if (!userData.activePlan) {
-        await update(userRef, { activePlan: planID });
+      if (!userData.activeDietPlan) {
+        await update(userRef, { activeDietPlan: planID });
       }
 
       const userPlans = userData.planIDs ? userData.planIDs : [];
@@ -62,7 +63,7 @@ export default function PlanScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Your Plan</Text>
+      <Text style={styles.title}>Create Your Diet Plan</Text>
       <TextInput
         style={styles.input}
         placeholder="Calories"

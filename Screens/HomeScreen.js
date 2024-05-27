@@ -8,20 +8,30 @@ export default function HomeScreen({ navigation }) {
   const auth = getAuth(app);
   const db = getDatabase(app);
   const [userName, setUserName] = useState('');
+  const [userPlan, setUserPlan] = useState(null);
 
   const handleLogout = () => {
     signOut(auth).then(() => {
-      navigation.navigate('Signup');
+      navigation.navigate('Login');
     });
   };
 
   useEffect(() => {
     if (auth.currentUser) {
       const userRef = ref(db, 'users/' + auth.currentUser.uid);
+      const planRef = ref(db, 'plans/' + auth.currentUser.uid);
+      
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           setUserName(data.username);
+        }
+      });
+      
+      onValue(planRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setUserPlan(data);
         }
       });
     }
@@ -34,6 +44,15 @@ export default function HomeScreen({ navigation }) {
         <Button title="Log Out" onPress={handleLogout} />
       </View>
       <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
+      {userPlan && (
+        <View style={styles.planContainer}>
+          <Text style={styles.planText}>Calories: {userPlan.calories}</Text>
+          <Text style={styles.planText}>Protein: {userPlan.protein}g</Text>
+          <Text style={styles.planText}>Carbs: {userPlan.carbs}g</Text>
+          <Text style={styles.planText}>Fats: {userPlan.fats}g</Text>
+        </View>
+      )}
+      <Button title="Create/Edit Plan" onPress={() => navigation.navigate('Plan')} />
       <View style={styles.progressContainer}>
         <View style={styles.progressSection}>
           <Text style={styles.progressText}>Calories eaten: ###</Text>
@@ -87,6 +106,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginBottom: 20,
     textAlign: 'center',
+  },
+  planContainer: {
+    marginBottom: 20,
+  },
+  planText: {
+    fontSize: 18,
+    marginBottom: 10,
   },
   progressContainer: {
     flexDirection: 'row',

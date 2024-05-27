@@ -5,16 +5,15 @@ import { getDatabase, ref, set, push, get, update } from 'firebase/database';
 import { app } from '../firebaseConfig';
 
 export default function WorkoutPlanScreen({ navigation }) {
-  const [workoutName, setWorkoutName] = useState('');
-  const [duration, setDuration] = useState('');
-  const [caloriesBurned, setCaloriesBurned] = useState('');
+  const [exercise, setExercise] = useState('');
+  const [reps, setReps] = useState('');
   const [error, setError] = useState('');
 
   const auth = getAuth(app);
   const db = getDatabase(app);
 
   const handleSavePlan = async () => {
-    if (!workoutName || !duration || !caloriesBurned) {
+    if (!exercise || !reps) {
       setError('Please fill in all fields');
       return;
     }
@@ -34,9 +33,8 @@ export default function WorkoutPlanScreen({ navigation }) {
       await set(planRef, {
         type: 'workout',
         order: planCount + 1,
-        workoutName,
-        duration: parseInt(duration),
-        caloriesBurned: parseInt(caloriesBurned),
+        exercise,
+        reps: parseInt(reps),
         userID: user.uid,
       });
 
@@ -64,22 +62,15 @@ export default function WorkoutPlanScreen({ navigation }) {
       <Text style={styles.title}>Create Your Workout Plan</Text>
       <TextInput
         style={styles.input}
-        placeholder="Workout Name"
-        value={workoutName}
-        onChangeText={setWorkoutName}
+        placeholder="Exercise"
+        value={exercise}
+        onChangeText={setExercise}
       />
       <TextInput
         style={styles.input}
-        placeholder="Duration (minutes)"
-        value={duration}
-        onChangeText={setDuration}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Calories Burned"
-        value={caloriesBurned}
-        onChangeText={setCaloriesBurned}
+        placeholder="Reps"
+        value={reps}
+        onChangeText={setReps}
         keyboardType="numeric"
       />
       <Button title="Save Plan" onPress={handleSavePlan} />

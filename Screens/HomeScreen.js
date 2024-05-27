@@ -9,6 +9,12 @@ export default function HomeScreen({ navigation }) {
   const db = getDatabase(app);
   const [userName, setUserName] = useState('');
   const [activePlan, setActivePlan] = useState(null);
+  const [progress, setProgress] = useState({
+    caloriesEaten: 0,
+    protein: 0,
+    carbs: 0,
+    fats: 0,
+  });
 
   const handleLogout = () => {
     signOut(auth).then(() => {
@@ -50,30 +56,23 @@ export default function HomeScreen({ navigation }) {
         <Button title="Log Out" onPress={handleLogout} />
       </View>
       <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
-      {activePlan && (
-        <View style={styles.planContainer}>
-          <Text style={styles.planText}>Calories: {activePlan.calories}</Text>
-          <Text style={styles.planText}>Protein: {activePlan.protein}g</Text>
-          <Text style={styles.planText}>Carbs: {activePlan.carbs}g</Text>
-          <Text style={styles.planText}>Fats: {activePlan.fats}g</Text>
-        </View>
-      )}
       <Button title="Create/Edit Plan" onPress={() => navigation.navigate('Plan')} />
       <Button title="Manage Plans" onPress={() => navigation.navigate('ManagePlans')} />
-      <View style={styles.progressContainer}>
-        <View style={styles.progressSection}>
-          <Text style={styles.progressText}>Calories eaten: ###</Text>
-          <Text style={styles.progressText}>Protein: ###</Text>
-          <Text style={styles.progressText}>Calories eaten: ###</Text>
-          <Text style={styles.progressText}>Calories eaten: ###</Text>
-          <Text style={styles.progressText}>Calories eaten: ###</Text>
+      {activePlan && (
+        <View style={styles.progressContainer}>
+          <View style={styles.progressSection}>
+            <Text style={styles.progressText}>Calories: {progress.caloriesEaten} / {activePlan.calories}</Text>
+            <Text style={styles.progressText}>Protein: {progress.protein}g / {activePlan.protein}g</Text>
+            <Text style={styles.progressText}>Carbs: {progress.carbs}g / {activePlan.carbs}g</Text>
+            <Text style={styles.progressText}>Fats: {progress.fats}g / {activePlan.fats}g</Text>
+          </View>
+          <View style={styles.progressSection}>
+            <Text style={styles.progressText}>Workouts completed: ###</Text>
+            <Text style={styles.progressText}>Cardio done: ###</Text>
+            <Text style={styles.progressText}>Calories burned: ###</Text>
+          </View>
         </View>
-        <View style={styles.progressSection}>
-          <Text style={styles.progressText}>Workouts completed: ###</Text>
-          <Text style={styles.progressText}>Cardio done: ###</Text>
-          <Text style={styles.progressText}>Calories burned: ###</Text>
-        </View>
-      </View>
+      )}
       <View style={styles.progressBarContainer}>
         <Text style={styles.progressBarText}>Progress bars/Goals:</Text>
         <View style={styles.progressBar}>
@@ -113,13 +112,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginBottom: 20,
     textAlign: 'center',
-  },
-  planContainer: {
-    marginBottom: 20,
-  },
-  planText: {
-    fontSize: 18,
-    marginBottom: 10,
   },
   progressContainer: {
     flexDirection: 'row',

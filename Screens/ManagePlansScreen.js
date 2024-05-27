@@ -55,7 +55,7 @@ export default function ManagePlansScreen({ navigation }) {
         data={plans}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <View style={styles.planItem}>
+          <View style={[styles.planItem, item.id === activePlan && styles.activePlan]}>
             <Text style={styles.planText}>Plan {item.order}</Text>
             <Text style={styles.planText}>Calories: {item.calories}</Text>
             <Text style={styles.planText}>Protein: {item.protein}g</Text>
@@ -92,6 +92,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 15,
     width: '100%',
+  },
+  activePlan: {
+    backgroundColor: '#a0d3ff', // Change color to highlight the active plan
   },
   planText: {
     fontSize: 16,

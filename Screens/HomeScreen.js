@@ -15,6 +15,7 @@ export default function HomeScreen({ navigation }) {
     carbs: 0,
     fats: 0,
   });
+  const [planOrder, setPlanOrder] = useState(null);
 
   const handleLogout = () => {
     signOut(auth).then(() => {
@@ -42,6 +43,7 @@ export default function HomeScreen({ navigation }) {
             const data = snapshot.val();
             if (data) {
               setActivePlan(data);
+              setPlanOrder(data.order);
             }
           });
         }
@@ -56,11 +58,12 @@ export default function HomeScreen({ navigation }) {
         <Button title="Log Out" onPress={handleLogout} />
       </View>
       <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
-      <Button title="Create/Edit Plan" onPress={() => navigation.navigate('Plan')} />
+      <Button title="Create Plan" onPress={() => navigation.navigate('Plan')} />
       <Button title="Manage Plans" onPress={() => navigation.navigate('ManagePlans')} />
       {activePlan && (
         <View style={styles.progressContainer}>
           <View style={styles.progressSection}>
+            <Text style={styles.planOrderText}>Plan {planOrder}</Text>
             <Text style={styles.progressText}>Calories: {progress.caloriesEaten} / {activePlan.calories}</Text>
             <Text style={styles.progressText}>Protein: {progress.protein}g / {activePlan.protein}g</Text>
             <Text style={styles.progressText}>Carbs: {progress.carbs}g / {activePlan.carbs}g</Text>
@@ -80,7 +83,6 @@ export default function HomeScreen({ navigation }) {
         </View>
         <Text style={styles.progressGoalText}>Cardio goal: 60/120 minutes completed</Text>
       </View>
-
     </View>
   );
 }
@@ -115,6 +117,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0f7fa',
     padding: 10,
     borderRadius: 10,
+  },
+  planOrderText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
   },
   progressText: {
     fontSize: 16,

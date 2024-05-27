@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, Text } from 'react-native';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
-export default function SignupScreen() {
+export default function SignupScreen({ navigation }) { // Add navigation to the component props
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -13,7 +13,7 @@ export default function SignupScreen() {
   const handleSignup = async () => {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      alert('User registered successfully!');
+      navigation.navigate('Home'); // Navigate to Home screen
     } catch (error) {
       setError(error.message);
     }

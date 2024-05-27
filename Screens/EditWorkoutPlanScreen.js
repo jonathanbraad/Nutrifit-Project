@@ -1,6 +1,6 @@
 // src/screens/EditWorkoutPlanScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, FlatList } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, update, onValue } from 'firebase/database';
 import { app } from '../firebaseConfig';
@@ -11,6 +11,7 @@ export default function EditWorkoutPlanScreen({ navigation }) {
   const [workoutsCompleted, setWorkoutsCompleted] = useState('');
   const [cardioDone, setCardioDone] = useState('');
   const [caloriesBurned, setCaloriesBurned] = useState('');
+  const [exercises, setExercises] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -19,17 +20,35 @@ export default function EditWorkoutPlanScreen({ navigation }) {
       onValue(workoutProgressRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          setWorkoutsCompleted(data.workoutsCompleted.toString());
-          setCardioDone(data.cardioDone.toString());
-          setCaloriesBurned(data.caloriesBurned.toString());
+          setWorkoutsCompleted(data.workoutsCompleted?.toString() || '0');
+          setCardioDone(data.cardioDone?.toString() || '0');
+          setCaloriesBurned(data.caloriesBurned?.toString() || '0');
+        }
+      });
+
+      const activeWorkoutPlanRef = ref(db, 'users/' + auth.currentUser.uid + '/activeWorkoutPlan');
+      onValue(activeWorkoutPlanRef, (snapshot) => {
+        const activeWorkoutPlanID = snapshot.val();
+        if (activeWorkoutPlanID) {
+          const planRef = ref(db, 'plans/' + auth.currentUser.uid + '/' + activeWorkoutPlanID);
+          onValue(planRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.exercises) {
+              const exercisesWithProgress = data.exercises.map(exercise => ({
+                ...exercise,
+                progress: exercise.progress || 0,
+              }));
+              setExercises(exercisesWithProgress);
+            }
+          });
         }
       });
     }
   }, [auth.currentUser]);
 
   const handleUpdateWorkoutProgress = async () => {
-    if (!workoutsCompleted || !cardioDone || !caloriesBurned) {
-      setError('Please fill in all fields');
+    if (!workoutsCompleted && !cardioDone && !caloriesBurned) {
+      setError('Please fill in at least one field');
       return;
     }
 
@@ -37,15 +56,33 @@ export default function EditWorkoutPlanScreen({ navigation }) {
       const user = auth.currentUser;
       const workoutProgressRef = ref(db, 'users/' + user.uid + '/workoutProgress');
       await update(workoutProgressRef, {
-        workoutsCompleted: parseInt(workoutsCompleted),
-        cardioDone: parseInt(cardioDone),
-        caloriesBurned: parseInt(caloriesBurned),
+        workoutsCompleted: workoutsCompleted ? parseInt(workoutsCompleted) : undefined,
+        cardioDone: cardioDone ? parseInt(cardioDone) : undefined,
+        caloriesBurned: caloriesBurned ? parseInt(caloriesBurned) : undefined,
       });
+
+      const activeWorkoutPlanRef = ref(db, 'users/' + user.uid + '/activeWorkoutPlan');
+      onValue(activeWorkoutPlanRef, async (snapshot) => {
+        const activeWorkoutPlanID = snapshot.val();
+        if (activeWorkoutPlanID) {
+          const planRef = ref(db, 'plans/' + user.uid + '/' + activeWorkoutPlanID);
+          await update(planRef, {
+            exercises: exercises,
+          });
+        }
+      });
+
       navigation.navigate('Home');
     } catch (error) {
       console.error('Error updating workout progress:', error);
       setError(error.message);
     }
+  };
+
+  const incrementExerciseProgress = (index) => {
+    const updatedExercises = [...exercises];
+    updatedExercises[index].progress += 1;
+    setExercises(updatedExercises);
   };
 
   return (
@@ -71,6 +108,17 @@ export default function EditWorkoutPlanScreen({ navigation }) {
         value={caloriesBurned}
         onChangeText={setCaloriesBurned}
         keyboardType="numeric"
+      />
+      <FlatList
+        data={exercises}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item, index }) => (
+          <View style={styles.exerciseItem}>
+            <Text style={styles.exerciseText}>{item.exercise}: {item.reps} reps: {item.kilos} kg</Text>
+            <Text style={styles.exerciseText}>Progress: {item.progress} reps</Text>
+            <Button title="Add 1 Rep" onPress={() => incrementExerciseProgress(index)} />
+          </View>
+        )}
       />
       <Button title="Update Workout Progress" onPress={handleUpdateWorkoutProgress} />
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -105,5 +153,15 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 10,
     textAlign: 'center',
+  },
+  exerciseItem: {
+    padding: 10,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 5,
+    marginBottom: 10,
+    width: '100%',
+  },
+  exerciseText: {
+    fontSize: 16,
   },
 });

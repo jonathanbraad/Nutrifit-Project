@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, FlatList } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, set, push, get, update } from 'firebase/database';
 import { app } from '../firebaseConfig';
@@ -8,20 +8,22 @@ export default function WorkoutPlanScreen({ navigation }) {
   const [exercises, setExercises] = useState([]);
   const [exerciseName, setExerciseName] = useState('');
   const [reps, setReps] = useState('');
+  const [kilos, setKilos] = useState('');
   const [error, setError] = useState('');
 
   const auth = getAuth(app);
   const db = getDatabase(app);
 
   const handleAddExercise = () => {
-    if (!exerciseName || !reps) {
+    if (!exerciseName || !reps || !kilos) {
       setError('Please fill in all fields');
       return;
     }
-    const newExercise = { exercise: exerciseName, reps: parseInt(reps) };
+    const newExercise = { exercise: exerciseName, reps: parseInt(reps), kilos: parseFloat(kilos) };
     setExercises([...exercises, newExercise]);
     setExerciseName('');
     setReps('');
+    setKilos('');
     setError('');
   };
 
@@ -85,6 +87,13 @@ export default function WorkoutPlanScreen({ navigation }) {
         onChangeText={setReps}
         keyboardType="numeric"
       />
+      <TextInput
+        style={styles.input}
+        placeholder="Kilos"
+        value={kilos}
+        onChangeText={setKilos}
+        keyboardType="numeric"
+      />
       <Button title="Add Exercise" onPress={handleAddExercise} />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <FlatList
@@ -92,7 +101,7 @@ export default function WorkoutPlanScreen({ navigation }) {
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={styles.exerciseItem}>
-            <Text>{item.exercise}: {item.reps} reps</Text>
+            <Text>{item.exercise}: {item.reps} reps: {item.kilos} kg</Text>
           </View>
         )}
       />

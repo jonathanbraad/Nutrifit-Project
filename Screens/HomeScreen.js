@@ -20,6 +20,7 @@ export default function HomeScreen({ navigation }) {
     workoutsCompleted: 0,
     cardioDone: 0,
     caloriesBurned: 0,
+    exercises: {},
   });
 
   const handleLogout = () => {
@@ -88,6 +89,7 @@ export default function HomeScreen({ navigation }) {
             workoutsCompleted: data.workoutsCompleted || 0,
             cardioDone: data.cardioDone || 0,
             caloriesBurned: data.caloriesBurned || 0,
+            exercises: data.exercises || {},
           });
         }
       });
@@ -118,7 +120,9 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.progressSection}>
             <Text style={styles.planOrderText}>Active Workout Plan</Text>
             {activeWorkoutPlan.exercises.map((exercise, index) => (
-              <Text key={index} style={styles.progressText}>{exercise.exercise}: {workoutProgress[exercise.exercise] || 0} / {exercise.reps} reps</Text>
+              <Text key={index} style={styles.progressText}>
+                {exercise.exercise}: {workoutProgress.exercises[exercise.exercise] || 0} / {exercise.reps} reps: {exercise.kilos} kg
+              </Text>
             ))}
             <Text style={styles.progressText}>Workouts completed: {workoutProgress.workoutsCompleted}</Text>
             <Text style={styles.progressText}>Cardio done: {workoutProgress.cardioDone} minutes</Text>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, set, push, get, update } from 'firebase/database';
 import { app } from '../firebaseConfig';
@@ -62,48 +62,55 @@ export default function PlanScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Your Diet Plan</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Calories"
-        value={calories}
-        onChangeText={setCalories}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Protein (g)"
-        value={protein}
-        onChangeText={setProtein}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Carbs (g)"
-        value={carbs}
-        onChangeText={setCarbs}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Fats (g)"
-        value={fats}
-        onChangeText={setFats}
-        keyboardType="numeric"
-      />
-      <Button title="Save Plan" onPress={handleSavePlan} />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-    </View>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.innerContainer}>
+          <Text style={styles.title}>Create Your Diet Plan</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Calories"
+            value={calories}
+            onChangeText={setCalories}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Protein (g)"
+            value={protein}
+            onChangeText={setProtein}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Carbs (g)"
+            value={carbs}
+            onChangeText={setCarbs}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Fats (g)"
+            value={fats}
+            onChangeText={setFats}
+            keyboardType="numeric"
+          />
+          <Button title="Save Plan" onPress={handleSavePlan} />
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  innerContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
     padding: 20,
   },
   title: {

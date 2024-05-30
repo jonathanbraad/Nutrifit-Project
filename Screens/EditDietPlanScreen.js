@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, update, onValue } from 'firebase/database';
 import { app } from '../firebaseConfig';
@@ -51,48 +51,55 @@ export default function UpdateDietPlanScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Update Your Diet Progress</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Calories Eaten"
-        value={caloriesEaten}
-        onChangeText={setCaloriesEaten}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Protein (g)"
-        value={protein}
-        onChangeText={setProtein}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Carbs (g)"
-        value={carbs}
-        onChangeText={setCarbs}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Fats (g)"
-        value={fats}
-        onChangeText={setFats}
-        keyboardType="numeric"
-      />
-      <Button title="Update Progress" onPress={handleUpdatePlan} />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-    </View>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.innerContainer}>
+          <Text style={styles.title}>Update Your Diet Progress</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Calories Eaten"
+            value={caloriesEaten}
+            onChangeText={setCaloriesEaten}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Protein (g)"
+            value={protein}
+            onChangeText={setProtein}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Carbs (g)"
+            value={carbs}
+            onChangeText={setCarbs}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Fats (g)"
+            value={fats}
+            onChangeText={setFats}
+            keyboardType="numeric"
+          />
+          <Button title="Update Progress" onPress={handleUpdatePlan} />
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  innerContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
     padding: 20,
   },
   title: {

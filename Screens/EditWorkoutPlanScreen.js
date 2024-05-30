@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, FlatList } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, FlatList, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, update, onValue, get } from 'firebase/database';
 import { app } from '../firebaseConfig';
@@ -78,52 +78,59 @@ export default function EditWorkoutPlanScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Update Your Workout Progress</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Workouts Completed"
-        value={workoutsCompleted}
-        onChangeText={setWorkoutsCompleted}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Cardio Done (minutes)"
-        value={cardioDone}
-        onChangeText={setCardioDone}
-        keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Calories Burned"
-        value={caloriesBurned}
-        onChangeText={setCaloriesBurned}
-        keyboardType="numeric"
-      />
-      <FlatList
-        data={exercises}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item, index }) => (
-          <View style={styles.exerciseItem}>
-            <Text style={styles.exerciseText}>{item.exercise}: {item.reps} reps: {item.kilos} kg</Text>
-            <Text style={styles.exerciseText}>Progress: {item.progress} reps</Text>
-            <Button title="Add 1 Rep" onPress={() => incrementExerciseProgress(index)} />
-          </View>
-        )}
-      />
-      <Button title="Update Workout Progress" onPress={handleUpdateWorkoutProgress} />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-    </View>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.innerContainer}>
+          <Text style={styles.title}>Update Your Workout Progress</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Workouts Completed"
+            value={workoutsCompleted}
+            onChangeText={setWorkoutsCompleted}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Cardio Done (minutes)"
+            value={cardioDone}
+            onChangeText={setCardioDone}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Calories Burned"
+            value={caloriesBurned}
+            onChangeText={setCaloriesBurned}
+            keyboardType="numeric"
+          />
+          <FlatList
+            data={exercises}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item, index }) => (
+              <View style={styles.exerciseItem}>
+                <Text style={styles.exerciseText}>{item.exercise}: {item.reps} reps: {item.kilos} kg</Text>
+                <Text style={styles.exerciseText}>Progress: {item.progress} reps</Text>
+                <Button title="Add 1 Rep" onPress={() => incrementExerciseProgress(index)} />
+              </View>
+            )}
+          />
+          <Button title="Update Workout Progress" onPress={handleUpdateWorkoutProgress} />
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  innerContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
     padding: 20,
   },
   title: {
